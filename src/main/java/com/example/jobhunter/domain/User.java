@@ -68,13 +68,11 @@ public class User {
 
     @PrePersist
     public void handleBeforeCreate() {
-
         this.createdAt = Instant.now();
     }
 
     @PreUpdate
     public void handleBeforeUpdate() {
-
         this.updatedAt = Instant.now();
     }
 }

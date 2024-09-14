@@ -1,7 +1,6 @@
 package com.example.jobhunter.domain;
 
 import java.time.Instant;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,7 +37,6 @@ public class Resume {
 
     private Instant createdAt;
     private Instant updatedAt;
-
     private String createdBy;
     private String updatedBy;
 
