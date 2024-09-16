@@ -113,6 +113,10 @@ public class UserService {
         return this.userRepository.existsByEmail(email);
     }
 
+    public User handleGetUserByUsername(String username) {
+        return this.userRepository.findByEmail(username);
+    }
+
     public ResCreateUserDTO convertToResCreateUserDTO(User user) {
         ResCreateUserDTO res = new ResCreateUserDTO();
         ResCreateUserDTO.CompanyUser com = new ResCreateUserDTO.CompanyUser();
@@ -176,5 +180,17 @@ public class UserService {
         res.setGender(user.getGender());
         res.setAddress(user.getAddress());
         return res;
+    }
+
+    public void updateUserToken(String token, String email) {
+        User currentUser = this.handleGetUserByUsername(email);
+        if (currentUser != null) {
+            currentUser.setRefreshToken(token);
+            this.userRepository.save(currentUser);
+        }
+    }
+
+    public User getUserByRefreshTokenAndEmail(String token, String email) {
+        return this.userRepository.findByRefreshTokenAndEmail(token, email);
     }
 }
