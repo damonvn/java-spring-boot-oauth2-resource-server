@@ -2,6 +2,7 @@ package com.example.jobhunter.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.jobhunter.domain.User;
 import com.example.jobhunter.domain.request.ReqLoginDTO;
+import com.example.jobhunter.domain.response.ResCreateUserDTO;
 import com.example.jobhunter.domain.response.ResLoginDTO;
 import com.example.jobhunter.service.UserService;
 import com.example.jobhunter.util.SecurityUtil;
@@ -34,6 +36,7 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
@@ -46,6 +49,7 @@ public class AuthController {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/auth/login")
@@ -124,7 +128,7 @@ public class AuthController {
     public ResponseEntity<ResLoginDTO> getRefreshToken(
             @CookieValue(name = "refresh_token", defaultValue = "abc") String refresh_token) throws IdInvalidException {
         if (refresh_token.equals("abc")) {
-            throw new IdInvalidException("Bạn không có refresh token ở cookie");
+            throw new IdInvalidException("Không có refresh token ở cookie");
         }
         // check valid
         Jwt decodedToken = this.securityUtil.checkValidRefreshToken(refresh_token);
@@ -196,5 +200,20 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
                 .body(null);
+    }
+
+    @PostMapping("/auth/register")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User postManUser) throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(postManUser.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException(
+                    "Email " + postManUser.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+        }
+
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User ericUser = this.userService.handleCreateUser(postManUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.convertToResCreateUserDTO(ericUser));
     }
 }
