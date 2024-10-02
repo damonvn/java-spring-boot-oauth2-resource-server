@@ -102,12 +102,15 @@ public class AuthController {
 
     @GetMapping("/auth/account")
     @ApiMessage("fetch account")
-    public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
+    public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() throws IdInvalidException {
         String email = SecurityUtil.getCurrentUserLogin().isPresent()
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
 
         User currentUserDB = this.userService.handleGetUserByUsername(email);
+        if (currentUserDB == null) {
+            throw new IdInvalidException("Không có access token hoặc access token không hợp lệ");
+        }
         ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
         ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
 

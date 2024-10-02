@@ -84,7 +84,6 @@ public class UserController {
         if (fetchUser == null) {
             throw new IdInvalidException("User với id = " + id + " không tồn tại");
         }
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(this.userService.convertToResUserDTO(fetchUser));
     }
@@ -95,7 +94,6 @@ public class UserController {
     public ResponseEntity<ResultPaginationDTO> getAllUser(
             @Filter Specification<User> spec,
             Pageable pageable) {
-
         return ResponseEntity.status(HttpStatus.OK).body(
                 this.userService.fetchAllUser(spec, pageable));
     }
